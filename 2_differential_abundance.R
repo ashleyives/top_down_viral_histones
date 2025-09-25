@@ -34,8 +34,7 @@ rowwise_na_summary <- rowwise_na_summary %>%
 
 res <- res %>%
   left_join(rowwise_na_summary, by="PF")  %>%
-  mutate(MissingPercent = (notna/ncol(x_final))) %>%
-  filter(MissingPercent > 0.5) 
+  mutate(MissingPercent = (notna/ncol(x_final))) #can sanity check how complete feature is 
 
 save(res, file = "res.RData")
 
