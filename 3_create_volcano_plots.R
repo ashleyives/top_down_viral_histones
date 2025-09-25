@@ -213,3 +213,6 @@ h3si <- res %>%
     color = guide_colorbar(title = "First amino \nacid position")  # Add a continuous gradient legend for Cdelta
   ) 
 h3si
+
+
+

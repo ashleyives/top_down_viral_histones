@@ -38,3 +38,5 @@ res <- res %>%
   filter(MissingPercent > 0.5) 
 
 save(res, file = "res.RData")
+
+
