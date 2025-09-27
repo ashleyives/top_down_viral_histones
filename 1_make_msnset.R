@@ -203,13 +203,8 @@ x_grp <- x_grp%>%
 feat_rtv <- match_features(ms2 = x_grp,
                            ms1 = feat_rcm,
                            errors = the_error,
-                           # n_mme_sd = 4/the_error$ppm_sd,
-                           # n_rt_sd = 150/the_error$rt_sd
                            n_mme_sd = 3,
-                           n_rt_sd = 5
-                           # ppm_cutoff = 4,
-                           # rt_cutoff = 150
-)
+                           n_rt_sd = 3)
 
 #remove fake CV
 feat_rtv <- feat_rtv%>%
