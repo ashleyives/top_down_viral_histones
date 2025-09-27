@@ -160,6 +160,9 @@ x_grp <- create_pcg(x = x_clu,
                     n_Da = 2, 
                     n_rt_sd = 5) 
 
+#used for PTM plot
+save(x_grp, file = "x_grp_td.RData")
+
 x_meta0 <- create_mdata(x = x_grp,
                         errors = the_error,
                         n_mme_sd = 4/the_error$ppm_sd,
