@@ -3,7 +3,7 @@ This repository is for hosting the scripts and files to reproduce the analyses d
 
 **Human Coronavirus 229E Infection Alters Histone Proteoforms**
 
-Ashley N. Ives<sup>1<sup>, Stephanie Thibert1, Madelyn R. Berger2, Matthew J. Gaffrey2, Hugh Mitchell2, Sarai Williams1, Mowei Zhou2$, Katrina M. Waters2, Amy C. Sims3,4*, Tong Zhang2* 
+Ashley N. Ives<sup>1</sup>, Stephanie Thibert1, Madelyn R. Berger2, Matthew J. Gaffrey2, Hugh Mitchell2, Sarai Williams1, Mowei Zhou2$, Katrina M. Waters2, Amy C. Sims3,4*, Tong Zhang2* 
 
 1Environmental Molecular Sciences Division, Pacific Northwest National Laboratory, Richland, WA 99354, USA  
 
