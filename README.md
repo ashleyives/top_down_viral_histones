@@ -3,4 +3,4 @@ This repository is for hosting the scripts and files to reproduce the analyses d
 
 # Data analysis overview
 Process the data using the scripts in this repository in the specified order: 
-![alt text](https://github.com/ashleyives/top_down_viral_histones/blob/main/workflow_diagram.png)
+![alt text](https://github.com/ashleyives/top_down_viral_histones/blob/main/workflow_diagram.png.png)
