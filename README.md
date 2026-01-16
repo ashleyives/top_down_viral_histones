@@ -1,9 +1,9 @@
-# Top-Down Mass Spectrometry Reveals Alterations in Histone Proteoforms by Human Coronavirus 229E infection 
+# Human Coronavirus 229E Infection Alters Histone Proteoforms
 This repository is for hosting the scripts and files to reproduce the analyses described in the listed manuscript:
 
 **Human Coronavirus 229E Infection Alters Histone Proteoforms**
 
-Ashley N. Ives<sup>1</sup>, Stephanie Thibert1, Madelyn R. Berger2, Matthew J. Gaffrey2, Hugh Mitchell2, Sarai Williams1, Mowei Zhou2$, Katrina M. Waters2, Amy C. Sims3,4*, Tong Zhang2* 
+Ashley N. Ives<sup>1</sup>, Stephanie Thibert<sup>1</sup>, Madelyn R. Berger<sup>2</sup>, Matthew J. Gaffrey<sup>2</sup>, Hugh Mitchell<sup>2</sup>, Sarai Williams<sup>1</sup>, Mowei Zhou<sup>2$</sup>, Katrina M. Waters<sup>2</sup>, Amy C. Sims<sup>34</sup>, Tong Zhang<sup>2</sup> 
 
 <sup>1</sup>Environmental Molecular Sciences Division, Pacific Northwest National Laboratory, Richland, WA 99354, USA  
 
@@ -15,7 +15,6 @@ Ashley N. Ives<sup>1</sup>, Stephanie Thibert1, Madelyn R. Berger2, Matthew J. G
 
 <sup>$</sup>Current location: Department of Chemistry, Zhejiang University, HangZhou, China
 
-<sup>*</sup>Co-corresponding authors 
 
 # Data analysis overview
 Process the data using the scripts in this repository in the specified order: 
