@@ -14,58 +14,74 @@ x <- x %>%
   distinct(ID, .keep_all = TRUE) %>%
   dplyr::select(Gene, 'Protein accession', mi_mod, mi_location, mi_location_list, mi_adj_location_list, mi_level) %>%
   separate(mi_adj_location_list, into = c("mi_residue", "mi_adj_position"), 
-           sep = "(?<=\\D)(?=\\d)", convert = TRUE) %>% # Splits at the boundary between letters and numbers
+           sep = "(?<=\\D)(?=\\d)", convert = TRUE) %>% 
   dplyr::rename(Accession = 'Protein accession') %>%
   mutate(site_id = paste0(Accession, "_", mi_adj_position)) %>%
-  dplyr::select(-Gene)
+  dplyr::select(-Gene)%>%
+  filter(mi_mod != "Carbamyl")
 
-#load in clustal alignments made in uniprot for each core histone 
 h2a <- Biostrings::readAAStringSet(
-  file.path("h2a_align.txt"))
+  file.path("C:/Users/ives435/OneDrive - PNNL/histones/tong_mrc5_24hr/td/h2a_notzv_align.txt"))
+
+h2azv <- Biostrings::readAAStringSet(
+  file.path("C:/Users/ives435/OneDrive - PNNL/histones/tong_mrc5_24hr/td/h2azv_align.txt"))
 
 h2b <- Biostrings::readAAStringSet(
-  file.path("h2b_align.txt"))
+  file.path("C:/Users/ives435/OneDrive - PNNL/histones/tong_mrc5_24hr/td/h2b_align.txt"))
 
 h3 <- Biostrings::readAAStringSet(
-  file.path("h3_align.txt"))
+  file.path("C:/Users/ives435/OneDrive - PNNL/histones/tong_mrc5_24hr/td/h3_align.txt"))
 
 h4 <- Biostrings::readAAStringSet(
-  file.path("h4_align.txt"))
+  file.path("C:/Users/ives435/OneDrive - PNNL/histones/tong_mrc5_24hr/td/h4_align.txt"))
+
 
 wrangle_fasta <- function(x){
   
   y <- data.frame(
-    Accession = names(x),                          # Extracts protein accession
-    FullSequence = as.character(x),                              # Converts sequence data to character
+    Accession = names(x),                          
+    FullSequence = as.character(x),                              
     row.names = NULL,
     check.names = FALSE
   ) %>%
-    mutate(Accession = str_extract(Accession, "^\\S+"))  # Extract first word if needed
+    mutate(Accession = str_extract(Accession, "^\\S+"))  
   
   return(y)
 }
 
 h2a_df <- wrangle_fasta(h2a)
+h2azv_df <- wrangle_fasta(h2azv)
 h2b_df <- wrangle_fasta(h2b)
 h3_df <- wrangle_fasta(h3)
 h4_df <- wrangle_fasta(h4)
 
-all_histones <- bind_rows(h2a_df, h2b_df, h3_df, h4_df)
+all_histones <- bind_rows(h2a_df, h2azv_df, h2b_df, h3_df, h4_df)
 
 long_fasta <- all_histones %>%
-  mutate(letter = strsplit(FullSequence, "")) %>%  # Split sequences into individual characters
-  unnest(letter) %>%                              # Expand list-column into rows
-  group_by(Accession) %>%               # Group by sequence ID
-  mutate(alignment_position = row_number(),       # Add position numbers (1 to n for each sequence)
-         sequence_position = cumsum(ifelse(letter != "-", 1, 0)) %>% # Increment position for non "-" letters
-           ifelse(letter == "-", NA, .)) %>%     # Assign NA if letter is "-"                  
+  mutate(letter = strsplit(FullSequence, "")) %>%  
+  unnest(letter) %>%                              
+  group_by(Accession) %>%               
+  mutate(alignment_position = row_number(),       
+         sequence_position = cumsum(ifelse(letter != "-", 1, 0)) %>% 
+           ifelse(letter == "-", NA, .)) %>%                     
   ungroup()  %>%
   mutate(core_histone = case_when(
-    grepl("H2A", Accession) ~ "H2A",
+    grepl("H2AV", Accession) ~ "H2Azv",
+    grepl("H2AZ", Accession) ~ "H2Azv",
+    grepl("H2AX", Accession) ~ "H2A",
+    grepl("H2A2B", Accession) ~ "H2A",
+    grepl("H2A2A", Accession) ~ "H2A",
+    grepl("H2A1C", Accession) ~ "H2A",
+    grepl("H2A1J", Accession) ~ "H2A",
+    grepl("H2A1", Accession) ~ "H2A",
+    grepl("H2A1D", Accession) ~ "H2A",
+    grepl("H2A1B", Accession) ~ "H2A",
+    grepl("H2AJ", Accession) ~ "H2A",
+    grepl("H2A2C", Accession) ~ "H2A",
     grepl("H2B", Accession) ~ "H2B",
     grepl("H3", Accession) ~ "H3",
     grepl("H4", Accession) ~ "H4",
-    TRUE ~ NA_character_ # Default value if no match is found
+    TRUE ~ NA_character_ 
   ))%>%
   mutate(site_id = paste0(Accession, "_", sequence_position)) %>%
   dplyr::select(-Accession)
@@ -81,6 +97,24 @@ forplot <- long_fasta %>%
   left_join(x, by = join_by(site_id)) %>%
   separate(site_id, into = c("Accession"), sep="_", remove = FALSE) %>%
   left_join(genenames) %>%
+  group_by(core_histone, alignment_position) %>%
+  summarize(
+    mi_mod = paste(unique(na.omit(mi_mod)), collapse = "_"), 
+    letter = paste(unique(na.omit(letter[letter != "-"])), collapse = "/"), 
+    .groups = "drop"
+  ) %>%
+  ungroup() %>% 
+  group_by(core_histone) %>%
+  mutate(
+    x = row_number() %% 10,    
+    x = ifelse(x == 0, 10, x), 
+    y = (row_number() - 1) %/% 10 + 1 
+  ) %>%
+  ungroup() 
+
+
+forplot <- forplot %>%
+  tidyr::separate_rows(mi_mod, sep = "_") %>%
   mutate(symbol = case_when(
     mi_mod == "CTrmAmid" ~ "CTrmAmid",       # Assign for Carbamyl
     mi_mod == "Deamide" ~ "Deamide",          # Assign for Deamide
@@ -96,57 +130,57 @@ forplot <- long_fasta %>%
     mi_mod == "Glutahion" ~ "Ox2",        # Assign for Plus2Oxy
     TRUE ~ NA_character_                # Default: NA if no match
   )) %>%
-  mutate(letter = if_else(is.na(mi_mod), "-", letter)) %>%
-  mutate(plot_id = paste(alignment_position, "_", core_histone, "_", symbol)) %>% 
-  distinct(plot_id, .keep_all = TRUE) %>%
+  group_by(core_histone, alignment_position) %>%   #removes redundant rows for acetyl/trimethyl 
+  distinct(symbol, .keep_all = TRUE) %>%          
+  ungroup()  %>%                                     
   group_by(core_histone, alignment_position) %>%
-  # Create `symbol_stagger`
   mutate(
-    symbol_stagger = cumsum(!duplicated(symbol) & !is.na(symbol))
+    symbol_stagger = case_when(
+      n() <= 1 ~ 0,  # 0 or 1 symbol → 0
+      n() == 2 ~ ifelse(row_number() == 1, -0.5, 0.5), 
+      n() == 3 ~ case_when(                 
+        row_number() == 1 ~ -1,
+        row_number() == 2 ~ 0,
+        row_number() == 3 ~ 1
+      ),
+      TRUE ~ NA_real_   
+    )
   ) %>% 
-  ungroup() %>%
-  mutate(facet = case_when(
-    alignment_position >= 1 & alignment_position <= 70 ~ 1,
-    alignment_position > 70 ~ 2
-  )) %>%
-  group_by(core_histone, alignment_position) %>%
-  # Remove rows where `letter` is "-" in case of multiple rows per grouping
-  filter(!(n() > 1 & letter == "-")) %>%
-  ungroup()
-
-forplot <- forplot %>%
-  mutate(y_stagger = as.numeric(factor(core_histone)) + symbol_stagger * 0.2)
+  mutate(letter = case_when(nchar(letter) > 1 ~ "X",
+                            TRUE ~ letter)) 
 
 ptms <- forplot %>%
-  ggplot(aes(x = alignment_position)) +
-  # Plot letters with red/black coloring based on `mi_mod`
-  geom_text(
-    aes(y = as.numeric(factor(core_histone)), label = letter, color = ifelse(!is.na(mi_mod), "red", "black")),
-    size = 5
+  filter(core_histone != "H2Azv") %>%
+  ggplot(aes(x=x, y=y, size=7))+
+  geom_text(aes(label = letter, 
+                color = ifelse(!is.na(symbol), "red", "black")), 
+            fontface = "bold",  
+            show.legend = FALSE)+
+  scale_color_identity() +
+  theme_minimal()+
+  theme(
+    legend.text = element_text(size = 16),  # Font size for the legend labels
+    legend.title = element_text(size = 16), 
+    panel.grid = element_blank(),           # Remove panel grid
+    axis.ticks = element_blank(),          # Remove axis ticks
+    axis.text.x = element_blank(),         # Remove x-axis text
+    axis.text.y = element_blank(),         # Remove y-axis text
+    axis.title.x = element_blank(),        # Remove x-axis label
+    axis.title.y = element_blank(),        # Remove y-axis label
+    strip.text.x = element_text(size = 24, hjust = 0, fontface="bold"),  # Left-align labels
+    legend.position = "top", 
+    panel.border = element_rect(
+      colour = "black",                    # Black outer border
+      fill = NA, 
+      size = 1                             # Thickness of border
+    )
   ) +
-  scale_y_continuous(
-    breaks = c(1, 2, 3, 4), # Define positions on the y-axis
-    labels = c("H2A", "H2B", "H3", "H4") # Manually set labels
-  ) +
-  # Map symbol to specific shapes and control their staggered position using `y_stagger`
   geom_point(
-    aes(y = y_stagger, shape = symbol),
+    aes(y = y-0.5, x= x-symbol_stagger/2,shape = symbol),
     size = 4,
     color = "blue"
   ) +
-  theme_minimal() +
-  # Ensure facet labels are removed and specify x-axis breaks every 20 residues
-  labs(x = "Alignment Position", y = "Core Histone") +
-  theme_classic(base_size = 24) +
-  theme(
-    strip.text.x = element_blank(), # Remove facet labels (strip.text)
-    panel.spacing = unit(1, "lines"), # Ensure consistent spacing between facets
-    axis.text.y = element_text(color = "black"), # Ensure readable y-axis text
-    legend.position = "top" # Change legend position to bottom
-  ) +
-  scale_x_continuous(breaks = seq(0, max(forplot$alignment_position, na.rm = TRUE), by = 20)) +
-  scale_color_identity() +
-  # Map each symbol to a specific shape
+  scale_y_reverse()  +
   scale_shape_manual(
     values = c(
       "CTrmAmid" = 18,         # Diamond for CTrmAmid
@@ -163,6 +197,14 @@ ptms <- forplot %>%
     name = "PTM", # Change legend title to "PTM"
     na.translate = FALSE # Remove NA values from the legend
   ) +
-  # Divide into facets with free scales (separate x/y scales for facets)
-  facet_wrap(~ facet, ncol = 1, scales = "free")
+  guides(
+    shape = guide_legend(
+      nrow = 1,                # Force a single row in the legend
+      byrow = TRUE,            # Arrange items by row (useful for multiple rows)
+      title.position = "left",  # Position legend title on top of the keys
+      title.hjust = 0.5       # Center-align the title
+    )
+  ) +
+  facet_wrap(~core_histone, scales = "free",
+             labeller = as_labeller(c("H2A" = "(A) H2A", "H2B" = "(B) H2B", "H3" = "(C) H3", "H4" = "(D) H4")))
 ptms
